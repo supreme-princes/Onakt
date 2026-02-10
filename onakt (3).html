@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Onakt — КМ Досье</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --tg:        #2AABEE;
+      --tg-dark:   #1a8fcc;
+      --tg-deep:   #0d6fa0;
+      --tg-glow:   rgba(42,171,238,0.35);
+      --tg-dim:    rgba(42,171,238,0.15);
+      --tg-border: rgba(42,171,238,0.22);
+      --bg:        #0a0e13;
+      --bg2:       #0d1219;
+      --bg3:       #101620;
+      --text:      #c8dff0;
+      --muted:     rgba(200,223,240,0.4);
+      --red:       #ff4d6d;
+      --green:     #43d98c;
+      --amber:     #ffcc44;
+      --white:     #e8f4fd;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(42,171,238,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(42,171,238,0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 40px;
+      background: rgba(8,12,18,0.96);
+      border-bottom: 1px solid var(--tg-border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-left {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    }
+
+    .tg-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px; font-weight: 700;
+      color: var(--tg); letter-spacing: 3px;
+    }
+
+    .tg-icon {
+      width: 20px; height: 20px;
+      background: var(--tg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff;
+      box-shadow: 0 0 10px var(--tg-glow);
+    }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    }
+
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--tg);
+      box-shadow: 0 0 8px var(--tg);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity:0; } }
+
+    .wrap {
+      position: relative; z-index: 10;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    /* ГЕРОЙ */
+    .hero {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 32px;
+      align-items: center;
+      padding: 44px 0 36px;
+      border-bottom: 1px solid var(--tg-border);
+      position: relative;
+      animation: fadein .4s ease both;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -1px; left: 0;
+      width: 160px; height: 1px;
+      background: var(--tg);
+      box-shadow: 0 0 14px var(--tg);
+    }
+
+    .ava-wrap { position: relative; width: 110px; height: 110px; }
+
+    .ava {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #1e3a52, #0a1825);
+      border: 2px solid var(--tg);
+      box-shadow: 0 0 0 4px rgba(42,171,238,.1), 0 0 30px rgba(42,171,238,.2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+
+    .ava::after {
+      content: '';
+      position: absolute; top: -100%; left: 0;
+      width: 100%; height: 60%;
+      background: linear-gradient(transparent, rgba(42,171,238,.12), transparent);
+      animation: avascan 3.5s linear infinite;
+      z-index: 3; pointer-events: none;
+    }
+
+    @keyframes avascan { to { top: 200%; } }
+
+    .ava-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute; inset: 0;
+      z-index: 1;
+      display: block;
+    }
+
+    .ava-letter {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 40px; font-weight: 900;
+      color: var(--tg);
+      text-shadow: 0 0 20px var(--tg), 0 0 40px var(--tg-glow);
+      letter-spacing: -2px;
+      position: relative; z-index: 2;
+    }
+
+    .ava-ring {
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      border: 1px dashed rgba(42,171,238,.3);
+      animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ava-online {
+      position: absolute; bottom: 4px; right: 4px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .profile-tag { font-size: 9px; letter-spacing: 4px; color: var(--muted); margin-bottom: 6px; }
+
+    .profile-name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 42px; font-weight: 900;
+      color: var(--white); letter-spacing: 2px;
+      line-height: 1; margin-bottom: 4px;
+      animation: glitch 7s infinite;
+      cursor: pointer;
+    }
+
+    @keyframes glitch {
+      0%,91%,100% { transform:none; color: var(--white); }
+      92% { transform:translateX(-2px) skewX(-3deg); color: var(--tg); }
+      93% { transform:translateX(2px); }
+      94% { transform:none; color: var(--white); }
+    }
+
+    .profile-handle { font-size: 14px; color: var(--tg); letter-spacing: 1px; margin-bottom: 18px; }
+
+    .profile-bio {
+      font-size: 13px; font-weight: 300;
+      color: var(--muted); line-height: 1.7;
+      border-left: 2px solid var(--tg-dark);
+      padding-left: 14px; max-width: 500px; margin-bottom: 22px;
+    }
+
+    .profile-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+    .meta-chip { font-size: 10px; letter-spacing: 1px; color: var(--muted); display: flex; gap: 6px; }
+    .meta-chip b { color: var(--tg); font-weight: 600; }
+
+    /* СЕТКА */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .span2 { grid-column: 1 / -1; }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--tg-border);
+      position: relative; overflow: hidden;
+      transition: border-color .25s, box-shadow .25s;
+      animation: fadein .5s ease both;
+    }
+
+    .card:hover {
+      border-color: rgba(42,171,238,.45);
+      box-shadow: 0 0 24px rgba(42,171,238,.07);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--tg), transparent);
+      opacity: .35;
+    }
+
+    @keyframes fadein {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .card-head {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--tg-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 3px; color: var(--tg);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-icon { font-size: 13px; }
+
+    .card-badge {
+      font-size: 8px; letter-spacing: 2px;
+      padding: 2px 8px;
+      border: 1px solid var(--tg-border);
+      color: var(--muted);
+    }
+
+    .card-body { padding: 14px 16px; }
+
+    .row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(42,171,238,.06);
+      font-size: 11px;
+    }
+
+    .row:last-child { border-bottom: none; }
+    .row-key { color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+    .row-val { color: var(--white); letter-spacing: .5px; }
+    .row-val.tg  { color: var(--tg); }
+    .row-val.red { color: var(--red); text-shadow: 0 0 8px rgba(255,77,109,.4); }
+    .row-val.ok  { color: var(--green); }
+    .row-val.am  { color: var(--amber); }
+
+    /* TG-ССЫЛКИ */
+    .tg-link {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(42,171,238,.07);
+      cursor: pointer; transition: all .2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .tg-link:last-child { border-bottom: none; }
+    .tg-link:hover .tl-name { color: var(--tg); text-shadow: 0 0 8px var(--tg-glow); }
+    .tg-link:hover .tl-ico  { border-color: var(--tg); background: rgba(42,171,238,.1); }
+
+    .tl-ico {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg3);
+      border: 1px solid var(--tg-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; transition: all .2s;
+    }
+
+    .tl-info { flex: 1; }
+    .tl-name { font-size: 12px; color: var(--text); letter-spacing: .5px; }
+    .tl-sub  { font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+
+    .tl-status {
+      font-size: 9px; letter-spacing: 1px;
+      padding: 3px 9px; border-radius: 20px;
+    }
+
+    .tl-status.ok  { background: rgba(67,217,140,.12); color: var(--green); border: 1px solid rgba(67,217,140,.3); }
+    .tl-status.am  { background: rgba(255,204,68,.1);  color: var(--amber); border: 1px solid rgba(255,204,68,.3); }
+    .tl-status.dim { background: rgba(42,171,238,.06); color: var(--muted); border: 1px solid var(--tg-border); }
+
+    /* СКИЛЛЫ */
+    .skill { margin-bottom: 14px; }
+    .skill:last-child { margin-bottom: 0; }
+
+    .skill-hd {
+      display: flex; justify-content: space-between;
+      font-size: 10px; letter-spacing: 1px; margin-bottom: 6px;
+    }
+
+    .skill-lbl { color: var(--muted); }
+    .skill-pct { color: var(--tg); }
+
+    .skill-bar { height: 3px; background: rgba(42,171,238,.08); overflow: hidden; }
+
+    .skill-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--tg-deep), var(--tg));
+      box-shadow: 0 0 8px var(--tg);
+      animation: fillbar 1.6s ease-out forwards;
+    }
+
+    @keyframes fillbar { from { width: 0 !important; } }
+
+    /* АРКИ */
+    .arcs {
+      display: flex; justify-content: space-around;
+      padding: 8px 0 16px;
+    }
+
+    .arc-it { text-align: center; }
+
+    .arc-num {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--tg); margin-bottom: 2px;
+    }
+
+    .arc-lbl { font-size: 9px; letter-spacing: 2px; color: var(--muted); }
+
+    /* ТЕПЛОВАЯ КАРТА */
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(52, 1fr);
+      gap: 2px; padding: 6px 0;
+    }
+
+    .hd { aspect-ratio: 1; border-radius: 1px; }
+    .h0 { background: rgba(42,171,238,.04); }
+    .h1 { background: rgba(42,171,238,.18); }
+    .h2 { background: rgba(42,171,238,.38); }
+    .h3 { background: rgba(42,171,238,.62); }
+    .h4 { background: rgba(42,171,238,.88); box-shadow: 0 0 4px rgba(42,171,238,.5); }
+
+    /* ТЕГИ */
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 0; }
+
+    .tag {
+      font-size: 9px; letter-spacing: 1.5px;
+      padding: 4px 11px;
+      border: 1px solid rgba(42,171,238,.2);
+      color: var(--muted); cursor: default;
+      border-radius: 2px; transition: all .2s;
+    }
+
+    .tag:hover {
+      border-color: var(--tg); color: var(--tg);
+      box-shadow: 0 0 8px rgba(42,171,238,.15);
+    }
+
+    /* ТЕРМИНАЛ */
+    .term {
+      background: rgba(5,9,14,.9);
+      border: 1px solid var(--tg-border);
+      padding: 20px 20px 16px;
+      font-size: 11px; line-height: 2;
+      position: relative;
+    }
+
+    .term::before {
+      content: 'ВЫВОД СИСТЕМЫ';
+      position: absolute; top: -1px; left: 18px;
+      font-size: 8px; letter-spacing: 3px;
+      color: var(--bg); background: var(--tg-dark);
+      padding: 1px 10px;
+    }
+
+    .tl  { display: flex; gap: 10px; }
+    .tp  { color: var(--tg-dark); user-select: none; }
+    .tc  { color: var(--tg); }
+    .to  { color: rgba(200,223,240,.5); padding-left: 18px; }
+    .to.r{ color: rgba(255,77,109,.75); }
+    .to.g{ color: rgba(67,217,140,.75); }
+    .tc2 { display:inline-block; width:7px; height:12px; background:var(--tg); animation:blink 1s step-end infinite; vertical-align:middle; margin-left:3px; }
+
+    /* АЛЕРТ */
+    .alert {
+      border: 1px solid rgba(255,77,109,.28);
+      background: rgba(255,77,109,.04);
+      padding: 11px 18px;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 10px; letter-spacing: 1.5px;
+      color: rgba(255,77,109,.8);
+    }
+
+    .alert-icon { font-size: 14px; animation: blink 1.8s step-end infinite; }
+
+    /* ГРАФ */
+    .net { position: relative; height: 190px; overflow: hidden; }
+    .net svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .nd { position: absolute; border-radius: 50%; }
+    .nd-c { width: 16px; height: 16px; background: var(--tg); box-shadow: 0 0 20px var(--tg); }
+    .nd-s { width: 8px; height: 8px; background: var(--bg3); border: 1px solid rgba(42,171,238,.4); }
+    .nd-lbl { position: absolute; font-size: 8px; color: rgba(42,171,238,.55); white-space: nowrap; letter-spacing: 1px; }
+
+    /* ФУТЕР */
+    .footer {
+      border-top: 1px solid var(--tg-border);
+      padding: 18px 0 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 9px; letter-spacing: 1.5px;
+      color: rgba(42,171,238,.25);
+      margin-top: 20px;
+    }
+
+    @media (max-width: 680px) {
+      .grid { grid-template-columns: 1fr; }
+      .span2 { grid-column: 1; }
+      .hero { grid-template-columns: 1fr; }
+      .profile-name { font-size: 28px; }
+      .heatmap { grid-template-columns: repeat(26,1fr); }
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(42,171,238,.3); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--tg); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="tg-logo">
+      <div class="tg-icon">✈</div>
+      Web Adapter
+    </div>
+    <span class="blink">▮</span>
+  </div>
+  <div class="topbar-right">
+    <span class="live-dot"></span>
+    <span>АКТИВНО</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="ava-wrap">
+      <div class="ava-ring"></div>
+      <div class="ava">
+        <img class="ava-img" id="ava-img" src="avatarka.png" alt="" onerror="this.style.display='none'; document.getElementById('ava-fallback').style.display='block';"/>
+        <span class="ava-letter" id="ava-fallback" style="display:none">ON</span>
+      </div>
+      <div class="ava-online"></div>
+    </div>
+
+    <div>
+      <div class="profile-tag">[ СУБЪЕКТ ИДЕНТИФИЦИРОВАН ]</div>
+      <div class="profile-name">ONAKT</div>
+      <div class="profile-handle">@Onakt · Telegram</div>
+      <div class="profile-bio">
+        Активный участник Telegram-сети.
+      </div>
+      <div class="profile-meta">
+        <div class="meta-chip">ЗАМЕЧЕН С <b>2023</b></div>
+        <div class="meta-chip">ПОСЛЕДНИЙ РАЗ <b id="lastseen">—</b></div>
+        <div class="meta-chip">УРОВЕНЬ УГРОЗЫ <b style="color:var(--amber)">ОПАСНЫЙ</b></div>
+        <div class="meta-chip">ИСТОЧНИКОВ <b>4</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ИДЕНТИФИКАТОРЫ -->
+    <div class="card" style="animation-delay:.15s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">🪪</span> ИДЕНТИФИКАТОРЫ</div>
+        <span class="card-badge">БАЗА</span>
+      </div>
+      <div class="card-body">
+        <div class="row"><span class="row-key">НИК</span>           <span class="row-val">Onakt</span></div>
+        <div class="row"><span class="row-key">TG USERNAME</span>   <span class="row-val tg">@Onakt</span></div>
+        <div class="row"><span class="row-key">TG ID</span>         <span class="row-val">6265581208</span></div>
+        <div class="row"><span class="row-key">СТАТУС</span>        <span class="row-val ok">ОНЛАЙН</span></div>
+        <div class="row"><span class="row-key">ВЕРИФИКАЦИЯ</span>   <span class="row-val am">ЧАСТИЧНАЯ</span></div>
+        <div class="row"><span class="row-key">ДОСТОВЕРНОСТЬ</span> <span class="row-val tg">71%</span></div>
+      </div>
+    </div>
+
+    <!-- TG-АККАУНТЫ -->
+    <div class="card" style="animation-delay:.22s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">✈</span> TELEGRAM-АККАУНТЫ</div>
+        <span class="card-badge">СВЯЗАНЫ</span>
+      </div>
+      <div class="card-body">
+        <a class="tg-link" href="https://t.me/onakt" target="_blank" rel="noopener">
+          <div class="tl-ico">✈</div>
+          <div class="tl-info">
+            <div class="tl-name">Основной аккаунт</div>
+            <div class="tl-sub">@Onakt · личный</div>
+          </div>
+          <div class="tl-status ok">ПОДТВЕРЖДЁН</div>
+        </a>
+        <div class="tg-link">
+          <div class="tl-ico">🤖</div>
+          <div class="tl-info">
+            <div class="tl-name">Бот / автоответчик</div>
+            <div class="tl-sub">@OnaktBot · предположительно</div>
+          </div>
+          <div class="tl-status am">ВОЗМОЖНО</div>
+        </div>
+        <a class="tg-link" href="https://t.me/+9Jy6FTkWT-A0NmYy" target="_blank" rel="noopener">
+          <div class="tl-ico">📢</div>
+          <div class="tl-info">
+            <div class="tl-name">Канал</div>
+            <div class="tl-sub">t.me/+9Jy6FTkWT-A0NmYy · не публичный</div>
+          </div>
+          <div class="tl-status am">ОТКРЫТЬ</div>
+        </a>
+        <div class="tg-link">
+          <div class="tl-ico">👤</div>
+          <div class="tl-info">
+            <div class="tl-name">Альт-аккаунт</div>
+            <div class="tl-sub">неизвестно · скрыт</div>
+          </div>
+          <div class="tl-status dim">НЕ ВЕРИФИЦИРОВАН</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- МАТРИЦА НАВЫКОВ -->
+    <div class="card" style="animation-delay:.28s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">📊</span> МАТРИЦА НАВЫКОВ</div>
+        <span class="card-badge">ОЦЕНКА</span>
+      </div>
+      <div class="card-body">
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">OPSEC / АНОНИМНОСТЬ</span><span class="skill-pct">95%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">ОСИНТ-РАЗВЕДКА</span><span class="skill-pct">100%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">TG-СЕТИ / КАНАЛЫ</span><span class="skill-pct">100%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">СОЦИАЛЬНАЯ ИНЖЕНЕРИЯ</span><span class="skill-pct">100%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">ПРОГРАММИРОВАНИЕ</span><span class="skill-pct">10%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:10%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- МЕТРИКИ -->
+    <div class="card" style="animation-delay:.33s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">📡</span> МЕТРИКИ</div>
+        <span class="card-badge">LIVE</span>
+      </div>
+      <div class="card-body">
+        <div class="arcs">
+          <div class="arc-it">
+            <svg width="62" height="62" viewBox="0 0 62 62">
+              <circle cx="31" cy="31" r="25" fill="none" stroke="rgba(42,171,238,.08)" stroke-width="4"/>
+              <circle cx="31" cy="31" r="25" fill="none" stroke="#2AABEE" stroke-width="4"
+                stroke-dasharray="157" stroke-dashoffset="55" stroke-linecap="round"
+                transform="rotate(-90 31 31)" style="filter:drop-shadow(0 0 4px #2AABEE)"/>
+              <text x="31" y="36" text-anchor="middle" fill="#2AABEE" font-family="Unbounded" font-size="12" font-weight="700">65</text>
+            </svg>
+            <div class="arc-num">65</div>
+            <div class="arc-lbl">УГРОЗА</div>
+          </div>
+          <div class="arc-it">
+            <svg width="62" height="62" viewBox="0 0 62 62">
+              <circle cx="31" cy="31" r="25" fill="none" stroke="rgba(255,204,68,.08)" stroke-width="4"/>
+              <circle cx="31" cy="31" r="25" fill="none" stroke="#ffcc44" stroke-width="4"
+                stroke-dasharray="157" stroke-dashoffset="90" stroke-linecap="round"
+                transform="rotate(-90 31 31)" style="filter:drop-shadow(0 0 4px #ffcc44)"/>
+              <text x="31" y="36" text-anchor="middle" fill="#ffcc44" font-family="Unbounded" font-size="12" font-weight="700">43</text>
+            </svg>
+            <div class="arc-num" style="color:var(--amber)">43</div>
+            <div class="arc-lbl">ОТКРЫТОСТЬ</div>
+          </div>
+          <div class="arc-it">
+            <svg width="62" height="62" viewBox="0 0 62 62">
+              <circle cx="31" cy="31" r="25" fill="none" stroke="rgba(67,217,140,.08)" stroke-width="4"/>
+              <circle cx="31" cy="31" r="25" fill="none" stroke="#43d98c" stroke-width="4"
+                stroke-dasharray="157" stroke-dashoffset="28" stroke-linecap="round"
+                transform="rotate(-90 31 31)" style="filter:drop-shadow(0 0 4px #43d98c)"/>
+              <text x="31" y="36" text-anchor="middle" fill="#43d98c" font-family="Unbounded" font-size="12" font-weight="700">82</text>
+            </svg>
+            <div class="arc-num" style="color:var(--green)">82</div>
+            <div class="arc-lbl">ОХВАТ</div>
+          </div>
+        </div>
+        <div class="row"><span class="row-key">КЛАСС РИСКА</span>   <span class="row-val am">СРЕДНЕ-ВЫСОКИЙ</span></div>
+        <div class="row"><span class="row-key">VPN / PROXY</span>   <span class="row-val ok">ОБНАРУЖЕН</span></div>
+        <div class="row"><span class="row-key">УТЕЧКИ В БД</span>   <span class="row-val red">2 ЗАПИСИ</span></div>
+      </div>
+    </div>
+
+    <!-- ТЕПЛОВАЯ КАРТА -->
+    <div class="card span2" style="animation-delay:.38s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">🗓</span> АКТИВНОСТЬ — 52 НЕДЕЛИ</div>
+        <span class="card-badge">АГРЕГАЦИЯ</span>
+      </div>
+      <div class="card-body">
+        <div class="heatmap" id="hm"></div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:10px;font-size:9px;color:var(--muted);letter-spacing:2px;">
+          ИНТЕНСИВНОСТЬ:
+          <div class="hd h0" style="width:11px;height:11px"></div>
+          <div class="hd h1" style="width:11px;height:11px"></div>
+          <div class="hd h2" style="width:11px;height:11px"></div>
+          <div class="hd h3" style="width:11px;height:11px"></div>
+          <div class="hd h4" style="width:11px;height:11px"></div>
+          НИЗКАЯ → ВЫСОКАЯ
+        </div>
+      </div>
+    </div>
+
+    <!-- ГРАФ КОНТАКТОВ -->
+    <div class="card" style="animation-delay:.42s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">🕸</span> СЕТЬ КОНТАКТОВ</div>
+        <span class="card-badge">ЧАСТИЧНАЯ</span>
+      </div>
+      <div class="card-body" style="padding:8px">
+        <div class="net" id="netmap">
+          <svg id="netsvg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ТЕГИ -->
+    <div class="card" style="animation-delay:.45s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">🏷</span> ТЕГИ ИНТЕРЕСОВ</div>
+        <span class="card-badge">ВЫВОД</span>
+      </div>
+      <div class="card-body">
+        <div class="tags">
+          <span class="tag">ОСИНТ</span>
+          <span class="tag">OPSEC</span>
+          <span class="tag">КМ</span>
+          <span class="tag">АНОНИМНОСТЬ</span>
+          <span class="tag">TELEGRAM</span>
+          <span class="tag">УТЕЧКИ</span>
+          <span class="tag">PYTHON</span>
+          <span class="tag">LINUX</span>
+          <span class="tag">ВПН / ТОР</span>
+          <span class="tag">ПРОБИВ</span>
+          <span class="tag">КРИПТОВАЛЮТА</span>
+          <span class="tag">РЕВЕРС</span>
+          <span class="tag">ПАРСИНГ</span>
+          <span class="tag">БОТЫ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ТЕРМИНАЛ -->
+    <div class="term span2" style="animation-delay:.5s">
+      <div class="tl"><span class="tp">user@km-osint:~$</span> <span class="tc">досье --субъект onakt --глубина полная</span></div>
+      <div class="to">Разрешение никнейма: onakt...</div>
+      <div class="to g">► Никнейм найден в 4 публичных Telegram-источниках</div>
+      <div class="to">► Перекрёстная проверка по @username_tracer_bot... [████████████░░] 86%</div>
+      <div class="to g">► Подтверждённых TG-аккаунтов: 1 · Предположительных: 3</div>
+      <div class="to">► Участник: предположительно 12+ тематических групп</div>
+      <div class="to r">► ВНИМАНИЕ: субъект применяет активные контр-ОСИНТ меры</div>
+      <div class="to">► Геолокация: СКРЫТА — VPN-эндпоинт зафиксирован</div>
+      <div class="to">► Последняя активность: <span id="ts">—</span></div>
+      <div class="to">► Индекс достоверности профиля: 71%</div>
+      <div class="tl" style="margin-top:6px"><span class="tp">user@km-osint:~$</span> <span class="tc">_</span><span class="tc2"></span></div>
+    </div>
+
+    <!-- АЛЕРТ -->
+    <div class="alert span2" style="animation-delay:.55s">
+      <span class="alert-icon">⚠</span>
+      <span>Купить собственный веб сайт можно в ☛ @infopythonhat</span>
+      <span class="alert-icon">⚠</span>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>Web Adapter · TELEGRAM-ДОСЬЕ</span>
+    <span>СУБЪЕКТ: ONAKT · СФОРМИРОВАНО: <span id="gentime">—</span></span>
+  </div>
+
+</div>
+
+<script>
+  function tick() {
+    const n = new Date();
+    const p = x => String(x).padStart(2,'0');
+    document.getElementById('clock').textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+    const ts = n.toISOString().replace('T',' ').slice(0,19) + ' UTC';
+    document.getElementById('ts').textContent = ts;
+    document.getElementById('gentime').textContent = ts;
+  }
+  tick(); setInterval(tick, 1000);
+  document.getElementById('lastseen').textContent = 'СЕГОДНЯ';
+
+  // Тепловая карта
+  const hm = document.getElementById('hm');
+  for (let i = 0; i < 364; i++) {
+    const d = document.createElement('div');
+    d.className = 'hd';
+    const r = Math.random();
+    let lv = 0;
+    if (r > .58) lv = 1;
+    if (r > .74) lv = 2;
+    if (r > .86) lv = 3;
+    if (r > .94) lv = 4;
+    d.classList.add('h'+lv);
+    hm.appendChild(d);
+  }
+
+  // Граф
+  window.addEventListener('load', () => {
+    const map = document.getElementById('netmap');
+    const svg = document.getElementById('netsvg');
+    const W = map.offsetWidth || 320;
+    const cx = W / 2, cy = 90;
+
+    const nodes = [
+      { lbl: 'ONAKT',     x: cx,      y: cy,     c: true },
+      { lbl: 'КМ-ЧАТ',   x: cx-110,  y: cy-50  },
+      { lbl: 'ОСИНТ-КН', x: cx+110,  y: cy-50  },
+      { lbl: 'УТЕЧКИ',   x: cx-120,  y: cy+55  },
+      { lbl: 'ПАРСЕР',   x: cx+115,  y: cy+55  },
+      { lbl: 'ALT-ACC',  x: cx,      y: cy-75  },
+      { lbl: 'НЕИЗВ',    x: cx+50,   y: cy+80  },
+    ];
+
+    nodes.slice(1).forEach(n => {
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1', cx);   line.setAttribute('y1', cy);
+      line.setAttribute('x2', n.x); line.setAttribute('y2', n.y);
+      line.setAttribute('stroke','rgba(42,171,238,.18)');
+      line.setAttribute('stroke-width','1');
+      line.setAttribute('stroke-dasharray','5 4');
+      svg.appendChild(line);
+    });
+
+    nodes.forEach(n => {
+      const dot = document.createElement('div');
+      dot.className = 'nd ' + (n.c ? 'nd-c' : 'nd-s');
+      dot.style.left = `${n.x - (n.c ? 8 : 4)}px`;
+      dot.style.top  = `${n.y - (n.c ? 8 : 4)}px`;
+      map.appendChild(dot);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'nd-lbl';
+      lbl.textContent = n.lbl;
+      lbl.style.left = `${n.x + (n.c ? -24 : 10)}px`;
+      lbl.style.top  = `${n.y + (n.c ? 14 : -5)}px`;
+      map.appendChild(lbl);
+    });
+  });
+
+  // Аватарка: если файл есть — показываем, иначе буквы
+  const avaImg = document.getElementById('ava-img');
+  const avaFallback = document.getElementById('ava-fallback');
+  if (avaImg.complete) {
+    if (!avaImg.naturalWidth) {
+      avaImg.style.display = 'none';
+      avaFallback.style.display = 'block';
+    }
+  } else {
+    avaImg.addEventListener('load', () => {
+      avaImg.style.display = 'block';
+      avaFallback.style.display = 'none';
+    });
+    avaImg.addEventListener('error', () => {
+      avaImg.style.display = 'none';
+      avaFallback.style.display = 'block';
+    });
+  }
+
+  document.querySelector('.profile-name').addEventListener('click', function() {
+    this.style.color = 'var(--tg)';
+    this.style.transform = 'skewX(-4deg)';
+    setTimeout(() => { this.style.color = ''; this.style.transform = ''; }, 180);
+  });
+</script>
+</body>
+</html>
