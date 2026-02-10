@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Onakt — КМ Досье</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --tg:        #2AABEE;
+      --tg-dark:   #1a8fcc;
+      --tg-deep:   #0d6fa0;
+      --tg-glow:   rgba(42,171,238,0.35);
+      --tg-dim:    rgba(42,171,238,0.15);
+      --tg-border: rgba(42,171,238,0.22);
+      --bg:        #0a0e13;
+      --bg2:       #0d1219;
+      --bg3:       #101620;
+      --text:      #c8dff0;
+      --muted:     rgba(200,223,240,0.4);
+      --red:       #ff4d6d;
+      --green:     #43d98c;
+      --amber:     #ffcc44;
+      --white:     #e8f4fd;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(42,171,238,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(42,171,238,0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 40px;
+      background: rgba(8,12,18,0.96);
+      border-bottom: 1px solid var(--tg-border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar-left {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    }
+
+    .tg-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px; font-weight: 700;
+      color: var(--tg); letter-spacing: 3px;
+    }
+
+    .tg-icon {
+      width: 20px; height: 20px;
+      background: var(--tg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff;
+      box-shadow: 0 0 10px var(--tg-glow);
+    }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    }
+
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--tg);
+      box-shadow: 0 0 8px var(--tg);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity:0; } }
+
+    .wrap {
+      position: relative; z-index: 10;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    /* ГЕРОЙ */
+    .hero {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 32px;
+      align-items: center;
+      padding: 44px 0 36px;
+      border-bottom: 1px solid var(--tg-border);
+      position: relative;
+      animation: fadein .4s ease both;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -1px; left: 0;
+      width: 160px; height: 1px;
+      background: var(--tg);
+      box-shadow: 0 0 14px var(--tg);
+    }
+
+    .ava-wrap { position: relative; width: 110px; height: 110px; }
+
+    .ava {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #1e3a52, #0a1825);
+      border: 2px solid var(--tg);
+      box-shadow: 0 0 0 4px rgba(42,171,238,.1), 0 0 30px rgba(42,171,238,.2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+
+    .ava::after {
+      content: '';
+      position: absolute; top: -100%; left: 0;
+      width: 100%; height: 60%;
+      background: linear-gradient(transparent, rgba(42,171,238,.12), transparent);
+      animation: avascan 3.5s linear infinite;
+      z-index: 3; pointer-events: none;
+    }
+
+    @keyframes avascan { to { top: 200%; } }
+
+    .ava-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute; inset: 0;
+      z-index: 1;
+      display: block;
+    }
+
+    .ava-letter {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 40px; font-weight: 900;
+      color: var(--tg);
+      text-shadow: 0 0 20px var(--tg), 0 0 40px var(--tg-glow);
+      letter-spacing: -2px;
+      position: relative; z-index: 2;
+    }
+
+    .ava-ring {
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      border: 1px dashed rgba(42,171,238,.3);
+      animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ava-online {
+      position: absolute; bottom: 4px; right: 4px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .profile-tag { font-size: 9px; letter-spacing: 4px; color: var(--muted); margin-bottom: 6px; }
+
+    .profile-name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 42px; font-weight: 900;
+      color: var(--white); letter-spacing: 2px;
+      line-height: 1; margin-bottom: 4px;
+      animation: glitch 7s infinite;
+      cursor: pointer;
+    }
+
+    @keyframes glitch {
+      0%,91%,100% { transform:none; color: var(--white); }
+      92% { transform:translateX(-2px) skewX(-3deg); color: var(--tg); }
+      93% { transform:translateX(2px); }
+      94% { transform:none; color: var(--white); }
+    }
+
+    .profile-handle { font-size: 14px; color: var(--tg); letter-spacing: 1px; margin-bottom: 18px; }
+
+    .profile-bio {
+      font-size: 13px; font-weight: 300;
+      color: var(--muted); line-height: 1.7;
+      border-left: 2px solid var(--tg-dark);
+      padding-left: 14px; max-width: 500px; margin-bottom: 22px;
+    }
+
+    .profile-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+    .meta-chip { font-size: 10px; letter-spacing: 1px; color: var(--muted); display: flex; gap: 6px; }
+    .meta-chip b { color: var(--tg); font-weight: 600; }
+
+    /* СЕТКА */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .span2 { grid-column: 1 / -1; }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--tg-border);
+      position: relative; overflow: hidden;
+      transition: border-color .25s, box-shadow .25s;
+      animation: fadein .5s ease both;
+    }
+
+    .card:hover {
+      border-color: rgba(42,171,238,.45);
+      box-shadow: 0 0 24px rgba(42,171,238,.07);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--tg), transparent);
+      opacity: .35;
+    }
+
+    @keyframes fadein {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .card-head {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--tg-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 3px; color: var(--tg);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-icon { font-size: 13px; }
+
+    .card-badge {
+      font-size: 8px; letter-spacing: 2px;
+      padding: 2px 8px;
+      border: 1px solid var(--tg-border);
+      color: var(--muted);
+    }
+
+    .card-body { padding: 14px 16px; }
+
+    .row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(42,171,238,.06);
+      font-size: 11px;
+    }
+
+    .row:last-child { border-bottom: none; }
+    .row-key { color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+    .row-val { color: var(--white); letter-spacing: .5px; }
+    .row-val.tg  { color: var(--tg); }
+    .row-val.red { color: var(--red); text-shadow: 0 0 8px rgba(255,77,109,.4); }
+    .row-val.ok  { color: var(--green); }
+    .row-val.am  { color: var(--amber); }
+
+    /* TG-ССЫЛКИ */
+    .tg-link {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(42,171,238,.07);
+      cursor: pointer; transition: all .2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .tg-link:last-child { border-bottom: none; }
+    .tg-link:hover .tl-name { color: var(--tg); text-shadow: 0 0 8px var(--tg-glow); }
+    .tg-link:hover .tl-ico  { border-color: var(--tg); background: rgba(42,171,238,.1); }
+
+    .tl-ico {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg3);
+      border: 1px solid var(--tg-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; transition: all .2s;
+    }
+
+    .tl-info { flex: 1; }
+    .tl-name { font-size: 12px; color: var(--text); letter-spacing: .5px; }
+    .tl-sub  { font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+
+    .tl-status {
+      font-size: 9px; letter-spacing: 1px;
+      padding: 3px 9px; border-radius: 20px;
+    }
+
+    .tl-status.ok  { background: rgba(67,217,140,.12); color: var(--green); border: 1px solid rgba(67,217,140,.3); }
+    .tl-status.am  { background: rgba(255,204,68,.1);  color: var(--amber); border: 1px solid rgba(255,204,68,.3); }
+    .tl-status.dim { background: rgba(42,171,238,.06); color: var(--muted); border: 1px solid var(--tg-border); }
+
+    /* СКИЛЛЫ */
+    .skill { margin-bottom: 14px; }
+    .skill:last-child { margin-bottom: 0; }
+
+    .skill-hd {
+      display: flex; justify-content: space-between;
+      font-size: 10px; letter-spacing: 1px; margin-bottom: 6px;
+    }
+
+    .skill-lbl { color: var(--muted); }
+    .skill-pct { color: var(--tg); }
+
+    .skill-bar { height: 3px; background: rgba(42,171,238,.08); overflow: hidden; }
+
+    .skill-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--tg-deep), var(--tg));
+      box-shadow: 0 0 8px var(--tg);
+      animation: fillbar 1.6s ease-out forwards;
+    }
+
+    @keyframes fillbar { from { width: 0 !important; } }
+
+    /* АРКИ */
+    .arcs {
+      display: flex; justify-content: space-around;
+      padding: 8px 0 16px;
+    }
+
+    .arc-it { text-align: center; }
+
+    .arc-num {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--tg); margin-bottom: 2px;
+    }
+
+    .arc-lbl { font-size: 9px; letter-spacing: 2px; color: var(--muted); }
+
+    /* ТЕПЛОВАЯ КАРТА */
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(52, 1fr);
+      gap: 2px; padding: 6px 0;
+    }
+
+    .hd { aspect-ratio: 1; border-radius: 1px; }
+    .h0 { background: rgba(42,171,238,.04); }
+    .h1 { background: rgba(42,171,238,.18); }
+    .h2 { background: rgba(42,171,238,.38); }
+    .h3 { background: rgba(42,171,238,.62); }
+    .h4 { background: rgba(42,171,238,.88); box-shadow: 0 0 4px rgba(42,171,238,.5); }
+
+    /* ТЕГИ */
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 0; }
+
+    .tag {
+      font-size: 9px; letter-spacing: 1.5px;
+      padding: 4px 11px;
+      border: 1px solid rgba(42,171,238,.2);
+      color: var(--muted); cursor: default;
+      border-radius: 2px; transition: all .2s;
+    }
+
+    .tag:hover {
+      border-color: var(--tg); color: var(--tg);
+      box-shadow: 0 0 8px rgba(42,171,238,.15);
+    }
+
+    /* ТЕРМИНАЛ */
+    .term {
+      background: rgba(5,9,14,.9);
+      border: 1px solid var(--tg-border);
+      padding: 20px 20px 16px;
+      font-size: 11px; line-height: 2;
+      position: relative;
+    }
+
+    .term::before {
+      content: 'ВЫВОД СИСТЕМЫ';
+      position: absolute; top: -1px; left: 18px;
+      font-size: 8px; letter-spacing: 3px;
+      color: var(--bg); background: var(--tg-dark);
+      padding: 1px 10px;
+    }
+
+    .tl  { display: flex; gap: 10px; }
+    .tp  { color: var(--tg-dark); user-select: none; }
+    .tc  { color: var(--tg); }
+    .to  { color: rgba(200,223,240,.5); padding-left: 18px; }
+    .to.r{ color: rgba(255,77,109,.75); }
+    .to.g{ color: rgba(67,217,140,.75); }
+    .tc2 { display:inline-block; width:7px; height:12px; background:var(--tg); animation:blink 1s step-end infinite; vertical-align:middle; margin-left:3px; }
+
+    /* АЛЕРТ */
+    .alert {
+      border: 1px solid rgba(255,77,109,.28);
+      background: rgba(255,77,109,.04);
+      padding: 11px 18px;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 10px; letter-spacing: 1.5px;
+      color: rgba(255,77,109,.8);
+    }
+
+    .alert-icon { font-size: 14px; animation: blink 1.8s step-end infinite; }
+
+    /* ГРАФ */
+    .net { position: relative; height: 190px; overflow: hidden; }
+    .net svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .nd { position: absolute; border-radius: 50%; }
+    .nd-c { width: 16px; height: 16px; background: var(--tg); box-shadow: 0 0 20px var(--tg); }
+    .nd-s { width: 8px; height: 8px; background: var(--bg3); border: 1px solid rgba(42,171,238,.4); }
+    .nd-lbl { position: absolute; font-size: 8px; color: rgba(42,171,238,.55); white-space: nowrap; letter-spacing: 1px; }
+
+    /* ФУТЕР */
+    .footer {
+      border-top: 1px solid var(--tg-border);
+      padding: 18px 0 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 9px; letter-spacing: 1.5px;
+      color: rgba(42,171,238,.25);
+      margin-top: 20px;
+    }
+
+    @media (max-width: 680px) {
+      .grid { grid-template-columns: 1fr; }
+      .span2 { grid-column: 1; }
+      .hero { grid-template-columns: 1fr; }
+      .profile-name { font-size: 28px; }
+      .heatmap { grid-template-columns: repeat(26,1fr); }
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(42,171,238,.3); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--tg); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="tg-logo">
+      <div class="tg-icon">✈</div>
+      Web Adapter
+    </div>
+    <span class="blink">▮</span>
+  </div>
+  <div class="topbar-right">
+    <span class="live-dot"></span>
+    <span>АКТИВНО</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="ava-wrap">
+      <div class="ava-ring"></div>
+      <div class="ava">
+        <img class="ava-img" id="ava-img" src="avatarka.png" alt="" onerror="this.style.display='none'; document.getElementById('ava-fallback').style.display='block';"/>
+        <span class="ava-letter" id="ava-fallback" style="display:none">ON</span>
+      </div>
+      <div class="ava-online"></div>
+    </div>
+
+    <div>
+      <div class="profile-tag">[ СУБЪЕКТ ИДЕНТИФИЦИРОВАН ]</div>
+      <div class="profile-name">ONAKT</div>
+      <div class="profile-handle">@Onakt · Telegram</div>
+      <div class="profile-bio">
+        Активный участник Telegram-сети.
+      </div>
+      <div class="profile-meta">
+        <div class="meta-chip">ЗАМЕЧЕН С <b>2023</b></div>
+        <div class="meta-chip">ПОСЛЕДНИЙ РАЗ <b id="lastseen">—</b></div>
+        <div class="meta-chip">УРОВЕНЬ УГРОЗЫ <b style="color:var(--amber)">ОПАСНЫЙ</b></div>
+        <div class="meta-chip">ИСТОЧНИКОВ <b>4</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ИДЕНТИФИКАТОРЫ -->
+    <div class="card" style="animation-delay:.15s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">🪪</span> ИДЕНТИФИКАТОРЫ</div>
+        <span class="card-badge">БАЗА</span>
+      </div>
+      <div class="card-body">
+        <div class="row"><span class="row-key">НИК</span>           <span class="row-val">Onakt</span></div>
+        <div class="row"><span class="row-key">TG USERNAME</span>   <span class="row-val tg">@Onakt</span></div>
+        <div class="row"><span class="row-key">TG ID</span>         <span class="row-val">6265581208</span></div>
+        <div class="row"><span class="row-key">СТАТУС</span>        <span class="row-val ok">ОНЛАЙН</span></div>
+        <div class="row"><span class="row-key">ВЕРИФИКАЦИЯ</span>   <span class="row-val am">ЧАСТИЧНАЯ</span></div>
+        <div class="row"><span class="row-key">ДОСТОВЕРНОСТЬ</span> <span class="row-val tg">71%</span></div>
+      </div>
+    </div>
+
+    <!-- TG-АККАУНТЫ -->
+    <div class="card" style="animation-delay:.22s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">✈</span> TELEGRAM-АККАУНТЫ</div>
+        <span class="card-badge">СВЯЗАНЫ</span>
+      </div>
+      <div class="card-body">
+        <a class="tg-link" href="https://t.me/onakt" target="_blank" rel="noopener">
+          <div class="tl-ico">✈</div>
+          <div class="tl-info">
+            <div class="tl-name">Основной аккаунт</div>
+            <div class="tl-sub">@Onakt · личный</div>
+          </div>
+          <div class="tl-status ok">ПОДТВЕРЖДЁН</div>
+        </a>
+        <div class="tg-link">
+          <div class="tl-ico">🤖</div>
+          <div class="tl-info">
+            <div class="tl-name">Бот / автоответчик</div>
+            <div class="tl-sub">@OnaktBot · предположительно</div>
+          </div>
+          <div class="tl-status am">ВОЗМОЖНО</div>
+        </div>
+        <a class="tg-link" href="https://t.me/+9Jy6FTkWT-A0NmYy" target="_blank" rel="noopener">
+          <div class="tl-ico">📢</div>
+          <div class="tl-info">
+            <div class="tl-name">Канал</div>
+            <div class="tl-sub">t.me/+9Jy6FTkWT-A0NmYy · не публичный</div>
+          </div>
+          <div class="tl-status am">ОТКРЫТЬ</div>
+        </a>
+        <div class="tg-link">
+          <div class="tl-ico">👤</div>
+          <div class="tl-info">
+            <div class="tl-name">Альт-аккаунт</div>
+            <div class="tl-sub">неизвестно · скрыт</div>
+          </div>
+          <div class="tl-status dim">НЕ ВЕРИФИЦИРОВАН</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- МАТРИЦА НАВЫКОВ -->
+    <div class="card" style="animation-delay:.28s">
+      <div class="card-head">
+        <div class="card-title"><span class="card-icon">📊</span> МАТРИЦА НАВЫКОВ</div>
+        <span class="card-badge">ОЦЕНКА</span>
+      </div>
+      <div class="card-body">
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">OPSEC / АНОНИМНОСТЬ</span><span class="skill-pct">95%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:95%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">ОСИНТ-РАЗВЕДКА</span><span class="skill-pct">100%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">TG-СЕТИ / КАНАЛЫ</span><span class="skill-pct">100%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">СОЦИАЛЬНАЯ ИНЖЕНЕРИЯ</span><span class="skill-pct">100%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="width:100%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-hd"><span class="skill-lbl">ПРОГРАММИРОВАНИЕ</span><span clas
